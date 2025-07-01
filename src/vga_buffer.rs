@@ -75,3 +75,28 @@ impl Writer {
 
     fn new_line(&mut self) { }
 }
+
+impl Writer {
+    pub fn write_string(&mut self, s: &str) {
+        for byte in s.bytes() {
+            match byte {
+                // printable ascii byte or newline
+                0x20..=0x7e | b'\n' => self.write_byte(byte),
+                // not part of the ascii range
+                _ => self.write_byte(0xfe),
+            }
+        }
+    }
+}
+
+pub fn print_something() {
+    let mut writer = Writer {
+        column_position: 0,
+        color_code: ColorCode::new(Color::Yellow, Color::Black),
+        buffer: unsafe { &mut *(0xb8000 as *mut Buffer) },
+    };
+
+    writer.write_byte(b'H');
+    writer.write_string("ello ");
+    writer.write_string("World. I am Min.");
+}
